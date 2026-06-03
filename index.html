@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLFLIX Masterclass: Project Hail Mary</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            dark: '#020617',
+                            panel: '#0f172a',
+                            cyan: '#06b6d4',
+                            red: '#ef4444',
+                            white: '#f8fafc'
+                        }
+                    },
+                    fontFamily: {
+                        tech: ['Space Mono', 'monospace'],
+                        base: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- DYNAMIC THEME ENGINE --- */
+        :root {
+            /* Theme 1: Amnesia / Cryo-Sleep (Dark, blurry, cold) */
+            --bg-main: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.7);
+            --text-main: #94a3b8;
+            --text-muted: #475569;
+            --accent: #3b82f6; /* Dim blue */
+            --border-color: #1e293b;
+            --shadow-color: rgba(0, 0, 0, 0.8);
+            --font-head: 'Space Mono', monospace;
+        }
+
+        body.theme-awake {
+            /* Theme 2: Spaceship Dashboard (Deep Ocean Blue & Cyan - Photophobia Safe) */
+            --bg-main: #082f49; /* Dark Ocean */
+            --panel-bg: rgba(12, 74, 110, 0.85); /* Glass Ocean */
+            --text-main: #f0f9ff;
+            --text-muted: #bae6fd;
+            --accent: #22d3ee; /* Bright Cyan */
+            --border-color: #0ea5e9;
+            --shadow-color: rgba(34, 211, 238, 0.2);
+            --font-head: 'Inter', sans-serif;
+        }
+
+        /* --- GLOBAL STYLES --- */
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            transition: all 1.5s ease-in-out;
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            user-select: none;
+        }
+
+        body.theme-awake {
+            background-image: 
+                linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+        }
+
+        h1, h2, h3, .font-head { font-family: var(--font-head); letter-spacing: 1px; transition: font-family 1.5s ease; }
+        body.theme-awake h1, body.theme-awake h2, body.theme-awake h3 { font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+
+        /* --- COMPONENTS --- */
+        .space-panel {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 10px 30px var(--shadow-color);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+        }
+
+        .space-btn {
+            background-color: var(--accent);
+            color: #020617;
+            border: 2px solid var(--accent);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            font-family: var(--font-head);
+            font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
+            padding: 16px 32px; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .space-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px var(--shadow-color); filter: brightness(1.2); }
+        .space-btn:active { transform: translateY(1px); box-shadow: none; }
+
+        .outline-btn {
+            background-color: transparent; border: 2px solid var(--border-color);
+            color: var(--text-main); font-weight: bold; padding: 8px 20px; border-radius: 6px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .outline-btn:hover { background-color: var(--accent); color: #020617; border-color: var(--accent); }
+
+        /* --- LAYOUT & SLIDES --- */
+        main { flex: 1; position: relative; width: 100%; overflow: hidden; }
+        
+        .slide {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: none; opacity: 0; padding: 1.5rem; overflow-y: auto; overflow-x: hidden;
+        }
+        .slide.active {
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 1; animation: fadeIn 0.8s ease forwards;
+        }
+        .slide.active::before, .slide.active::after { content: ''; margin: auto; }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; filter: blur(4px); transform: scale(0.98); }
+            100% { opacity: 1; filter: blur(0); transform: scale(1); }
+        }
+
+        .page-content {
+            width: 100%; max-width: 950px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; flex-shrink: 0; padding: 2rem 0;
+        }
+
+        /* --- INTERACTIVE ELEMENTS --- */
+        .interactive-card { cursor: pointer; transition: all 0.3s; border-left: 4px solid var(--accent); }
+        .interactive-card:hover { transform: translateY(-4px); background-color: rgba(255,255,255,0.05); }
+        body.theme-awake .interactive-card:hover { background-color: rgba(6, 182, 212, 0.1); }
+        
+        .reveal-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease; }
+        .interactive-card.open .reveal-content { max-height: 400px; opacity: 1; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); }
+
+        .follow-up-box {
+            background-color: rgba(0,0,0,0.3); border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem; text-align: left;
+        }
+        body.theme-awake .follow-up-box { background-color: rgba(14, 165, 233, 0.15); }
+
+        /* --- MATCH GAME --- */
+        .match-btn {
+            width: 100%; padding: 1.25rem; text-align: left; border: 2px solid var(--border-color); 
+            border-radius: 8px; background: var(--bg-main); cursor: pointer; font-weight: bold;
+            color: var(--text-main); font-size: 1.1rem; transition: all 0.2s;
+        }
+        .match-btn:hover:not(.matched) { border-color: var(--accent); box-shadow: 0 0 15px var(--shadow-color); }
+        .match-btn.selected { border-color: var(--accent); background-color: rgba(59, 130, 246, 0.2); transform: scale(1.02); }
+        body.theme-awake .match-btn.selected { background-color: rgba(6, 182, 212, 0.2); }
+        
+        .match-btn.matched { border-color: #22c55e; background-color: rgba(34, 197, 94, 0.15); color: #22c55e; pointer-events: none; }
+        @keyframes errorShake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-5px); border-color: red; } 50% { transform: translateX(5px); border-color: red; } }
+        .error-shake { animation: errorShake 0.4s ease; }
+
+        /* --- MODALS & EFFECTS --- */
+        #dict-modal { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .clickable-word { color: var(--accent); border-bottom: 2px dashed var(--accent); cursor: pointer; font-weight: 800; transition: all 0.2s; }
+        .clickable-word:hover { background-color: var(--accent); color: #000; border-bottom-style: solid; padding: 0 4px; border-radius: 4px; }
+
+        /* Soft Cyan Pulse for Photophobia safety */
+        #reboot-overlay {
+            position: fixed; inset: 0; z-index: 9999; background: #06b6d4; display: none; pointer-events: none; mix-blend-mode: screen;
+        }
+        .reboot-active { display: block !important; animation: softPulse 2.5s ease-out forwards; }
+        @keyframes softPulse { 
+            0% { opacity: 0; } 
+            20% { opacity: 0.3; } 
+            40% { opacity: 0; } 
+            60% { opacity: 0.2; } 
+            100% { opacity: 0; display: none; } 
+        }
+
+        #praise-popup { position: fixed; top: 15%; left: 50%; transform: translate(-50%, 0) scale(0); opacity: 0; z-index: 10000; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #praise-popup.show { transform: translate(-50%, 0) scale(1); opacity: 1; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAYS -->
+    <div id="reboot-overlay"></div>
+    <div id="overlay-dark" class="fixed inset-0 bg-black/80 z-[60] hidden backdrop-blur-sm transition-opacity" onclick="closeNotepad()"></div>
+
+    <!-- PRAISE POPUP -->
+    <div id="praise-popup">
+        <div class="space-panel px-8 py-4 flex items-center gap-4 text-2xl font-head border-l-4 border-l-[var(--accent)]">
+            <span id="praise-text" class="text-[var(--text-main)] font-bold tracking-widest uppercase"></span>
+        </div>
+    </div>
+
+    <!-- DICTIONARY MODAL -->
+    <div id="dict-modal">
+        <div class="space-panel p-10 max-w-lg w-full m-4 relative border-t-4 border-t-[var(--accent)] shadow-[0_0_40px_rgba(0,0,0,0.8)]">
+            <button onclick="closeDict()" class="absolute top-4 right-4 text-gray-400 hover:text-white font-black text-2xl">✕</button>
+            <h3 id="dict-word" class="font-head text-4xl mb-2 text-white uppercase tracking-widest">Word</h3>
+            <p id="dict-def" class="text-xl font-medium text-gray-300 mb-6 pb-6 border-b border-gray-700">Definition</p>
+            <div class="follow-up-box !mt-0 !bg-black/30 !border-l-[var(--accent)]">
+                <p class="font-bold text-[var(--accent)] text-xs uppercase tracking-widest mb-2 font-head">🗣️ Follow-up:</p>
+                <p id="dict-prompt" class="font-medium text-white text-base">Prompt text</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="h-16 md:h-20 flex items-center justify-between px-4 md:px-8 shrink-0 relative z-50 bg-[var(--panel-bg)] border-b border-[var(--border-color)] backdrop-blur-md transition-colors">
+        <div class="flex items-center gap-3 md:gap-4">
+            <span class="text-2xl md:text-3xl filter grayscale opacity-50 transition-all duration-1000" id="header-icon">🔬</span>
+            <h1 class="font-head text-lg md:text-xl text-[var(--text-main)] tracking-widest uppercase hidden md:block" id="header-title">Cryo-Status: Sleep</h1>
+            <span class="bg-transparent border border-[var(--accent)] text-[var(--accent)] font-bold text-[10px] md:text-xs px-2 py-1 rounded tracking-widest uppercase">A2 LEVEL</span>
+        </div>
+        
+        <div class="flex items-center gap-3 md:gap-4">
+            <div class="flex items-center gap-2 border border-[var(--border-color)] rounded px-3 py-1 hidden lg:flex bg-black/20">
+                <span class="text-[10px] text-[var(--text-muted)] font-bold mr-2 uppercase tracking-widest">Logs:</span>
+                <button onclick="triggerPraise('MISSION SAVED!', '🌍')" class="text-xl hover:scale-125 transition-transform" title="Good">🌍</button>
+                <button onclick="triggerPraise('SCIENCE!', '🧪')" class="text-xl hover:scale-125 transition-transform" title="Science">🧪</button>
+                <button onclick="triggerPraise('SURVIVOR!', '🚀')" class="text-xl hover:scale-125 transition-transform" title="Survivor">🚀</button>
+            </div>
+            <button onclick="toggleFullscreen()" class="outline-btn text-[10px] uppercase tracking-widest hidden sm:block">Fullscreen</button>
+            <button onclick="toggleNotepad()" class="space-btn !text-xs !py-2 !px-4 !bg-transparent !text-[var(--accent)] hover:!bg-[var(--accent)] hover:!text-[var(--bg-main)]">Ship Logs</button>
+        </div>
+    </header>
+
+    <!-- MAIN APP AREA -->
+    <main id="main-area">
+        
+        <!-- PAGE 1: COVER -->
+        <section class="slide active">
+            <div class="page-content">
+                <div class="w-full max-w-[200px] md:max-w-[280px] space-panel p-2 mb-8 mx-auto bg-black border-[var(--border-color)]">
+                    <img src="https://upload.wikimedia.org/wikipedia/pt/e/e6/Project_Hail_Mary_-_2026.jpg" alt="Project Hail Mary" class="w-full h-auto object-cover rounded opacity-80 hover:opacity-100 transition-opacity">
+                </div>
+                <span class="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-[var(--accent)] mb-4 bg-transparent border border-[var(--accent)] px-4 py-1 rounded font-head">WOLFLIX Masterclass</span>
+                <h1 class="font-head text-5xl md:text-7xl mb-2 text-white uppercase tracking-tighter drop-shadow-lg">Project</h1>
+                <h1 class="font-head text-5xl md:text-7xl mb-6 text-white uppercase tracking-tighter drop-shadow-lg">Hail Mary</h1>
+                <h2 class="text-lg md:text-xl font-normal text-[var(--text-muted)] mb-10 uppercase tracking-widest">A Sci-Fi Experience</h2>
+                
+                <button onclick="nextSlide()" class="space-btn mt-4 px-12">Initialize</button>
+            </div>
+        </section>
+
+        <!-- PAGE 2: Briefing -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Directive 01</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-8 text-[var(--text-main)]">Mission Briefing</h1>
+                
+                <div class="space-panel p-8 md:p-12 text-left mx-auto max-w-4xl w-full border-l-4 border-l-[var(--accent)]">
+                    <p class="mb-4 font-bold text-xl md:text-2xl text-[var(--text-main)] border-b border-[var(--border-color)] pb-4">A2 (Pre-Intermediate) Masterclass</p>
+                    <p class="mb-8 text-[var(--text-muted)] text-base md:text-lg">In this lesson, you wake up on a spaceship with amnesia. You must remember who you are and save humanity. Good luck.</p>
+                    
+                    <div class="bg-black/30 p-6 rounded border border-[var(--border-color)]">
+                        <h3 class="font-head uppercase text-sm mb-4 text-[var(--accent)] tracking-widest">Grammar Target:</h3>
+                        <ul class="space-y-4 font-bold text-base md:text-lg text-[var(--text-main)]">
+                            <li class="flex items-center gap-3"><span class="text-2xl">⚖️</span> <strong>Obligation:</strong> The difference between MUST and HAVE TO.</li>
+                            <li class="flex items-center gap-3"><span class="text-2xl">🚀</span> <strong>Survival Lexicon:</strong> Space, memory, and science vocabulary.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: Warm Up 1 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Warm Up</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-10 text-[var(--text-main)]">Amnesia</h1>
+                
+                <div class="space-panel p-10 md:p-14 text-center max-w-4xl mx-auto w-full">
+                    <span class="text-7xl block mb-8 opacity-50 filter blur-[2px]">👤</span>
+                    <p class="text-xl md:text-3xl font-bold mb-8 text-[var(--text-main)] leading-relaxed">
+                        "Imagine you wake up in a strange room. You don't know your name. You don't remember where you are. What is the very first thing you do?"
+                    </p>
+                    <div class="follow-up-box mx-auto max-w-2xl bg-black/40">
+                        <p class="font-bold text-[var(--accent)] text-[10px] mb-1 tracking-widest uppercase font-head">🗣️ Follow-up:</p>
+                        <p class="font-medium text-base text-[var(--text-main)]">If you could completely erase one bad memory from your brain, would you do it? Why?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: Warm Up 2 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Warm Up</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-10 text-[var(--text-main)]">The Journey</h1>
+                
+                <div class="space-panel p-10 md:p-14 text-center max-w-4xl mx-auto w-full border-t-4 border-t-[var(--accent)]">
+                    <span class="text-7xl block mb-8 opacity-80">🚀</span>
+                    <p class="text-xl md:text-3xl font-bold mb-8 text-[var(--text-main)] leading-relaxed">
+                        "Would you accept a mission to travel in space for 10 years, knowing you can never return to Earth?"
+                    </p>
+                    <div class="follow-up-box mx-auto max-w-2xl bg-black/40">
+                        <p class="font-bold text-[var(--accent)] text-[10px] mb-1 tracking-widest uppercase font-head">🗣️ Follow-up:</p>
+                        <p class="font-medium text-base text-[var(--text-main)]">If you could take only 3 personal items on this spaceship, what would you take?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 5: Lexicon 1 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Vocabulary</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-6 text-[var(--text-main)]">The Scientist</h1>
+                <p class="text-base md:text-lg text-[var(--text-muted)] font-bold mb-8">Match the space vocabulary. Click a word, then click its meaning.</p>
+
+                <div class="flex flex-col md:flex-row gap-6 w-full max-w-5xl mx-auto">
+                    <!-- Words -->
+                    <div class="flex-1 space-y-4" id="words-1">
+                        <button class="match-btn word-btn-1" data-match="1" onclick="handleMatch(this, 'word', 1)">Amnesia</button>
+                        <button class="match-btn word-btn-1" data-match="2" onclick="handleMatch(this, 'word', 1)">Extinction</button>
+                        <button class="match-btn word-btn-1" data-match="3" onclick="handleMatch(this, 'word', 1)">To Calculate</button>
+                    </div>
+                    <!-- Definitions -->
+                    <div class="flex-1 space-y-4" id="defs-1">
+                        <button class="match-btn def-btn-1 text-sm md:text-base" data-match="2" onclick="handleMatch(this, 'def', 1)">When a species dies out completely and no longer exists.</button>
+                        <button class="match-btn def-btn-1 text-sm md:text-base" data-match="3" onclick="handleMatch(this, 'def', 1)">To use math to find an answer or solve a problem.</button>
+                        <button class="match-btn def-btn-1 text-sm md:text-base" data-match="1" onclick="handleMatch(this, 'def', 1)">The loss of memories, facts, and personal experiences.</button>
+                    </div>
+                </div>
+                
+                <div id="lex-success-1" class="hidden w-full max-w-5xl mx-auto mt-8">
+                    <div class="follow-up-box !border-l-green-500 bg-green-900/10">
+                        <p class="font-bold text-green-500 text-[10px] uppercase tracking-widest mb-2 font-head">🗣️ Follow-up:</p>
+                        <p class="text-base text-[var(--text-main)] font-bold">In your opinion, what is the biggest threat of extinction for humanity today?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 6: Lexicon 2 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Vocabulary</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-6 text-[var(--text-main)]">The Ship</h1>
+                <p class="text-base md:text-lg text-[var(--text-muted)] font-bold mb-8">Match the survival terms to unlock the system.</p>
+
+                <div class="flex flex-col md:flex-row gap-6 w-full max-w-5xl mx-auto">
+                    <!-- Words -->
+                    <div class="flex-1 space-y-4" id="words-2">
+                        <button class="match-btn word-btn-2" data-match="4" onclick="handleMatch(this, 'word', 2)">To Survive</button>
+                        <button class="match-btn word-btn-2" data-match="5" onclick="handleMatch(this, 'word', 2)">Gravity</button>
+                        <button class="match-btn word-btn-2" data-match="6" onclick="handleMatch(this, 'word', 2)">Airlock</button>
+                    </div>
+                    <!-- Definitions -->
+                    <div class="flex-1 space-y-4" id="defs-2">
+                        <button class="match-btn def-btn-2 text-sm md:text-base" data-match="6" onclick="handleMatch(this, 'def', 2)">A door system on a spaceship that keeps the air inside.</button>
+                        <button class="match-btn def-btn-2 text-sm md:text-base" data-match="4" onclick="handleMatch(this, 'def', 2)">To continue to live, especially in a dangerous situation.</button>
+                        <button class="match-btn def-btn-2 text-sm md:text-base" data-match="5" onclick="handleMatch(this, 'def', 2)">The invisible force that pulls things to the ground.</button>
+                    </div>
+                </div>
+                
+                <div id="lex-success-2" class="hidden w-full max-w-5xl mx-auto mt-8">
+                    <div class="follow-up-box !border-l-green-500 bg-green-900/10">
+                        <p class="font-bold text-green-500 text-[10px] uppercase tracking-widest mb-2 font-head">🗣️ Follow-up:</p>
+                        <p class="text-base text-[var(--text-main)] font-bold">What is the most difficult situation you have ever survived?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 7: Grammar 1 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Grammar Focus</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-8 text-[var(--text-main)]">HAVE TO</h1>
+                
+                <div class="space-panel p-8 md:p-12 text-left max-w-4xl w-full mx-auto border-l-4 border-l-[var(--accent)]">
+                    <p class="text-lg md:text-xl font-bold mb-6 text-[var(--text-main)]">We use "Have to" to talk about <strong class="text-[var(--accent)]">External Obligations</strong>. Rules, laws, or physical facts that we cannot control.</p>
+                    
+                    <div class="bg-black/30 p-6 rounded border border-[var(--border-color)]">
+                        <h3 class="font-head text-xl text-[var(--accent)] mb-4 tracking-wide uppercase">The Rule Book</h3>
+                        <ul class="space-y-4 font-bold text-base text-[var(--text-main)]">
+                            <li>🚀 "I <span class="text-[var(--accent)]">have to</span> wear a spacesuit outside." <span class="text-sm font-normal text-[var(--text-muted)] block mt-1">(Fact: Or I will die)</span></li>
+                            <li>💻 "The computer says we <span class="text-[var(--accent)]">have to</span> fix the engine." <span class="text-sm font-normal text-[var(--text-muted)] block mt-1">(External instruction)</span></li>
+                            <li class="pt-2 border-t border-[var(--border-color)]">❌ Negative: "He <span class="text-[var(--accent)]">doesn't have to</span> work today." <span class="text-sm font-normal text-[var(--text-muted)] block mt-1">(It is not necessary)</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 8: Grammar 2 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Grammar Focus</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-8 text-[var(--text-main)]">MUST</h1>
+                
+                <div class="space-panel p-8 md:p-12 text-left max-w-4xl w-full mx-auto border-l-4 border-l-red-500">
+                    <p class="text-lg md:text-xl font-bold mb-6 text-[var(--text-main)]">We use "Must" to talk about <strong class="text-red-500">Internal Obligations</strong>. Personal duties, strong feelings, or urgent commands.</p>
+                    
+                    <div class="bg-black/30 p-6 rounded border border-[var(--border-color)]">
+                        <h3 class="font-head text-xl text-red-500 mb-4 tracking-wide uppercase">The Heart & Urgency</h3>
+                        <ul class="space-y-4 font-bold text-base text-[var(--text-main)]">
+                            <li>🌍 "I <span class="text-red-500">must</span> save the Earth." <span class="text-sm font-normal text-[var(--text-muted)] block mt-1">(Personal duty / My heart says so)</span></li>
+                            <li>⚠️ "You <span class="text-red-500">must</span> wake up now!" <span class="text-sm font-normal text-[var(--text-muted)] block mt-1">(Urgent command)</span></li>
+                            <li class="pt-2 border-t border-[var(--border-color)]">❌ Negative: "We <span class="text-red-500">mustn't</span> fail." <span class="text-sm font-normal text-[var(--text-muted)] block mt-1">(Prohibition / Strictly forbidden)</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 9: Grammar Contrast -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">The Difference</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-8 text-[var(--text-main)]">Must vs Have To</h1>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto w-full">
+                    <div class="space-panel p-8 text-left border-t-4 border-t-[var(--accent)]">
+                        <h3 class="text-2xl font-black mb-4 text-[var(--accent)]">HAVE TO</h3>
+                        <p class="font-bold text-[var(--text-muted)] mb-4">The universe forces you.</p>
+                        <p class="text-lg text-white font-medium italic bg-black/40 p-4 rounded">"I have to eat food every day."</p>
+                    </div>
+                    <div class="space-panel p-8 text-left border-t-4 border-t-red-500">
+                        <h3 class="text-2xl font-black mb-4 text-red-500">MUST</h3>
+                        <p class="font-bold text-[var(--text-muted)] mb-4">Your morality forces you.</p>
+                        <p class="text-lg text-white font-medium italic bg-black/40 p-4 rounded">"I must help my friend. He is in danger."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 10: Interactive Challenge -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Interactive Challenge</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-8 text-[var(--text-main)]">The Computer</h1>
+                <p class="text-base font-bold text-[var(--text-muted)] mb-8 max-w-2xl mx-auto">Complete the sentences to unlock the system logs. Click to reveal.</p>
+
+                <div class="space-y-4 max-w-3xl mx-auto w-full text-lg font-bold">
+                    <div class="space-panel p-6 interactive-card text-left" onclick="this.classList.toggle('open')">
+                        <div class="flex items-center gap-4">
+                            <span class="text-3xl opacity-80">⚙️</span>
+                            <p class="text-[var(--text-main)]">"To enter the lab, you <span class="border-b-2 border-gray-600 px-4 text-transparent mx-1">___</span> type the password." <br><span class="text-sm font-normal text-gray-400">(Rule)</span></p>
+                        </div>
+                        <div class="reveal-content mt-0 font-head text-xl md:text-2xl text-[var(--accent)] border-none pt-0">> HAVE TO</div>
+                    </div>
+                    <div class="space-panel p-6 interactive-card text-left border-l-red-500" onclick="this.classList.toggle('open')">
+                        <div class="flex items-center gap-4">
+                            <span class="text-3xl opacity-80">❤️</span>
+                            <p class="text-[var(--text-main)]">"I promise you, I <span class="border-b-2 border-gray-600 px-4 text-transparent mx-1">___</span> return home safely." <br><span class="text-sm font-normal text-gray-400">(Personal Duty)</span></p>
+                        </div>
+                        <div class="reveal-content mt-0 font-head text-xl md:text-2xl text-red-500 border-none pt-0">> MUST</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 11: Speaking Practice -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] font-head">Speaking Practice</h2>
+                <h1 class="font-head text-4xl md:text-6xl uppercase mb-8 text-[var(--text-main)]">Your Daily Rules</h1>
+                
+                <div class="space-panel p-10 max-w-3xl mx-auto w-full text-center">
+                    <span class="text-6xl mb-6 block opacity-80">📋</span>
+                    <p class="text-xl md:text-2xl font-bold mb-8 text-[var(--text-main)]">
+                        Think about your life on Earth. What is the difference between your external rules and your internal duties?
+                    </p>
+                    
+                    <div class="bg-black/30 p-6 border border-[var(--border-color)] rounded text-left">
+                        <p class="font-bold text-[var(--accent)] text-[10px] mb-3 tracking-widest uppercase font-head">🗣️ Prompts:</p>
+                        <p class="italic text-base md:text-lg text-white font-medium mb-3">"For my job/school, I <span class="text-[var(--accent)] font-bold">have to...</span>"</p>
+                        <p class="italic text-base md:text-lg text-white font-medium">"But for my health and family, I <span class="text-red-500 font-bold">must...</span>"</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 12: The Catalyst -->
+        <section class="slide text-center">
+            <div class="page-content">
+                <div class="max-w-4xl mx-auto flex flex-col items-center justify-center w-full">
+                    <span class="text-7xl md:text-8xl mb-8 block drop-shadow-md filter grayscale opacity-50">☀️</span>
+                    <h2 class="font-bold tracking-widest mb-4 uppercase text-sm text-[var(--accent)] font-head">The Memory Returns</h2>
+                    <h1 class="font-head text-4xl md:text-6xl uppercase mb-8 text-white">The Dying Sun</h1>
+                    <div class="space-panel p-8 md:p-10 max-w-3xl border-t-4 border-t-red-500 text-lg md:text-xl leading-relaxed font-bold text-gray-300 shadow-2xl">
+                        "You remember now. The sun is getting cold. An alien organism called Astrophage is eating its energy. If you fail, humanity goes extinct."
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 13: WOW MECHANIC (Wake Up Protocol) -->
+        <section class="slide">
+            <div class="page-content">
+                <div class="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center h-full">
+                    <h2 class="font-bold tracking-widest mb-4 uppercase text-sm text-red-500 animate-pulse font-head">CRITICAL EMERGENCY</h2>
+                    <h1 class="font-head text-4xl md:text-6xl uppercase mb-10 text-white">Initialize System</h1>
+                    
+                    <p class="text-xl md:text-2xl font-bold mb-12 text-[var(--text-muted)]">
+                        You are the sole survivor of the Hail Mary. It's time to work.
+                    </p>
+                    
+                    <button onclick="triggerWakeUpProtocol()" class="space-btn px-10 md:px-16 py-5 md:py-6 text-xl md:text-2xl w-full max-w-md bg-red-600 border-red-800 text-white shadow-[0_0_30px_rgba(239,68,68,0.5)] hover:bg-red-500" id="wakeup-btn">
+                        WAKE UP PROTOCOL
+                    </button>
+                    <p class="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest mt-8 font-head">Student: Click to activate the lab.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- THEME CHANGES TO SPACESHIP DASHBOARD (OCEAN BLUE/CYAN) HERE -->
+
+        <!-- PAGE 14: Trailer Prep -->
+        <section class="slide text-center">
+            <div class="page-content">
+                <div class="max-w-4xl mx-auto flex flex-col items-center w-full">
+                    <span class="text-6xl md:text-7xl mb-6 block drop-shadow-md">🔬</span>
+                    <h2 class="font-bold tracking-widest mb-3 uppercase text-xs text-[var(--accent)] font-head">Observation</h2>
+                    <h1 class="text-4xl md:text-6xl font-head uppercase mb-8 text-[var(--text-main)]">The Mission Log</h1>
+                    
+                    <div class="space-panel p-8 md:p-10 max-w-3xl border-l-8 border-l-[var(--accent)] text-base md:text-lg leading-relaxed text-left w-full shadow-lg">
+                        <p class="mb-6 font-bold border-b border-[var(--border-color)] pb-4 text-white">
+                            Watch the briefing of your mission. Listen to what you HAVE TO do.
+                        </p>
+                        <div class="bg-black/20 p-6 rounded border border-[var(--border-color)]">
+                            <p class="font-bold text-xs text-[var(--text-muted)] uppercase tracking-widest mb-3 font-head">> Video Focus:</p>
+                            <ul class="list-disc pl-6 space-y-2 font-bold text-gray-200">
+                                <li>Look at his confusion when he wakes up.</li>
+                                <li>Listen to the woman explaining the extinction threat.</li>
+                                <li>Why is he the only one left?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 15: The Video -->
+        <section class="slide h-full">
+            <div class="page-content h-full w-full max-w-5xl mx-auto">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-sm text-[var(--accent)] text-center font-head">Visual Data</h2>
+                <h1 class="text-3xl md:text-5xl font-head uppercase mb-8 text-center text-[var(--text-main)]">Hail Mary Teaser</h1>
+                
+                <div class="w-full aspect-video rounded-xl overflow-hidden border-4 border-[var(--border-color)] bg-black shadow-2xl relative shrink-0">
+                    <iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/m08TxIsFTRI?rel=0" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 16: Comprehension Check -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Data Analysis</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-10 text-center text-[var(--text-main)]">Comprehension</h1>
+                
+                <div class="space-y-6 max-w-4xl mx-auto w-full">
+                    <div class="space-panel p-8 interactive-card text-left" onclick="this.classList.toggle('open')">
+                        <p class="font-bold text-lg md:text-xl text-white">Q: What is happening to the Sun (Earth's star)?</p>
+                        <div class="reveal-content text-[var(--accent)] font-bold text-base md:text-lg mt-4 border-t border-[var(--border-color)] pt-4 font-head tracking-wider uppercase">
+                            > It is getting dimmer (colder) because of the Astrophage.
+                        </div>
+                    </div>
+                    <div class="space-panel p-8 interactive-card text-left" onclick="this.classList.toggle('open')">
+                        <p class="font-bold text-lg md:text-xl text-white">Q: Does the main character remember his mission at first?</p>
+                        <div class="reveal-content text-[var(--accent)] font-bold text-base md:text-lg mt-4 border-t border-[var(--border-color)] pt-4 font-head tracking-wider uppercase">
+                            > No. He wakes up with amnesia and doesn't know his name.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 17: Script Decryption -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Script Analysis</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-6 text-center text-[var(--text-main)]">The Dialogue</h1>
+                <p class="text-[10px] md:text-xs text-[var(--text-muted)] font-bold mb-8 uppercase tracking-widest font-head">Click highlighted words for definitions and discussion.</p>
+
+                <div class="space-panel p-8 md:p-12 max-w-4xl mx-auto w-full text-left font-medium text-lg leading-loose text-[var(--text-main)]">
+                    "Do you know your name? You've been in a <span class="clickable-word" onclick="showDef('Coma', 'A state of deep unconsciousness for a long period.', 'If you were in a coma for 10 years, what is the first thing you would ask?')">coma</span> for a very long time... You're a scientist. We need you to <span class="clickable-word" onclick="showDef('Calculate', 'To determine the amount or number mathematically.', 'Are you good at calculating things in your head?')">calculate</span> how much time we have left. The organism is <span class="clickable-word" onclick="showDef('Eating', 'Consuming food/energy.', 'If an organism is eating the sun, what happens to Earth?')">eating</span> our star. It's an <span class="clickable-word" onclick="showDef('Extinction', 'The end of an organism or a group of organisms.', 'Do you think humanity will face extinction soon?')">extinction</span> level event. We sent you on a <span class="clickable-word" onclick="showDef('Suicide Mission', 'A task so dangerous that you are not expected to survive.', 'Would you accept a suicide mission to save your family?')">suicide mission</span> to save us."
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 18: Grammar Applied -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Interactive Challenge</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-8 text-center text-[var(--text-main)]">Ryland's Orders</h1>
+                <p class="text-center text-base md:text-lg font-bold mb-10 text-[var(--text-muted)] max-w-2xl mx-auto">Click the blank to insert the correct modal based on his situation.</p>
+
+                <div class="space-y-4 max-w-3xl mx-auto w-full text-lg font-bold">
+                    <div class="space-panel p-6 interactive-card text-left flex flex-col md:flex-row md:items-center justify-between gap-4" onclick="this.classList.toggle('open')">
+                        <div class="flex items-start gap-4">
+                            <span class="text-3xl md:text-4xl mt-1 md:mt-0">🧑‍🔬</span>
+                            <p class="text-white">"To survive the trip, my body <span class="border-b-2 border-[var(--border-color)] px-4 text-transparent mx-1">___</span> sleep for years." <br><span class="text-sm text-[var(--accent)]">(Biology rule)</span></p>
+                        </div>
+                        <div class="reveal-content mt-0 font-head text-xl md:text-2xl text-[var(--accent)] border-none pt-0">> HAS TO</div>
+                    </div>
+                    <div class="space-panel p-6 interactive-card text-left flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-red-500" onclick="this.classList.toggle('open')">
+                        <div class="flex items-start gap-4">
+                            <span class="text-3xl md:text-4xl mt-1 md:mt-0">🌍</span>
+                            <p class="text-white">"Earth is depending on me. I <span class="border-b-2 border-red-500 px-4 text-transparent mx-1">___</span> not fail." <br><span class="text-sm text-red-400">(Strong prohibition)</span></p>
+                        </div>
+                        <div class="reveal-content mt-0 font-head text-xl md:text-2xl text-red-500 border-none pt-0">> MUST</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 19: Deep Discussion 1 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Philosophy</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-10 text-center text-[var(--text-main)]">The Sacrifice</h1>
+                
+                <div class="space-panel p-8 md:p-12 max-w-4xl mx-auto w-full text-center shadow-xl">
+                    <span class="text-6xl mb-6 block drop-shadow-md">💀 🌍</span>
+                    <p class="text-xl md:text-2xl font-bold leading-relaxed mb-10 text-white">
+                        "The Hail Mary is a suicide mission. They only had enough fuel to get there, but not to come back. Would you sacrifice your own life to save 8 billion people on Earth?"
+                    </p>
+                    
+                    <div class="bg-black/20 p-6 rounded text-left border border-[var(--border-color)]">
+                        <p class="font-black text-[var(--accent)] font-head text-[10px] mb-2 tracking-widest uppercase">🗣️ Prompt:</p>
+                        <p class="italic text-base md:text-lg text-[var(--text-main)] font-medium">"I think I [ would / wouldn't ] do it because..."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 20: The Airlock Game -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Survival Scenario</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-10 text-center text-[var(--text-main)]">The Airlock</h1>
+                
+                <div class="space-panel p-8 md:p-10 max-w-4xl mx-auto w-full text-center border-t-4 border-t-red-500">
+                    <span class="text-6xl mb-6 block drop-shadow-md">🚪 💨</span>
+                    <p class="text-xl md:text-2xl font-bold leading-relaxed mb-8 text-white">
+                        "There is a hole in the ship. Oxygen is escaping. You have 30 seconds. Tell your crewmate what they MUST or HAVE TO do immediately!"
+                    </p>
+                    
+                    <div class="bg-red-900/20 border border-red-500/50 p-6 text-left rounded">
+                        <p class="font-black text-red-500 font-head text-[10px] mb-3 tracking-widest uppercase">🗣️ Your Orders:</p>
+                        <p class="italic text-base md:text-lg text-white font-medium mb-2">"You <span class="text-red-400 font-bold underline">have to</span> put on your helmet!"</p>
+                        <p class="italic text-base md:text-lg text-white font-medium">"We <span class="text-red-400 font-bold underline">must</span> close the door!"</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 21: Deep Discussion 2 -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Psychology</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-10 text-center text-[var(--text-main)]">Isolation</h1>
+                
+                <div class="space-panel p-8 md:p-12 max-w-4xl mx-auto w-full text-center">
+                    <div class="flex justify-center items-center gap-6 mb-8 text-5xl md:text-6xl">
+                        <span>🌌</span> <span class="text-[var(--text-muted)] font-head text-2xl">vs</span> <span>🧠</span>
+                    </div>
+                    <p class="text-xl md:text-2xl font-bold leading-relaxed mb-10 text-white">
+                        "Ryland is completely alone, light-years away from any human being. What do you think is the hardest part of absolute isolation? How would you keep your mind healthy?"
+                    </p>
+                    
+                    <div class="bg-black/20 p-6 rounded text-left border border-[var(--border-color)]">
+                        <p class="font-black text-[var(--accent)] font-head text-[10px] mb-2 tracking-widest uppercase">🗣️ Prompt:</p>
+                        <p class="italic text-base md:text-lg text-[var(--text-main)] font-medium">"To stay sane, I would <span class="text-[var(--accent)] font-bold">have to...</span>"</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 22: Interactive Speaking -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Interactive Speaking</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-10 text-center text-[var(--text-main)]">The Teacher</h1>
+                
+                <div class="space-panel p-8 md:p-10 max-w-4xl mx-auto w-full text-center bg-black/40">
+                    <p class="text-xl font-bold mb-8 text-white">
+                        Before going to space, Ryland was a middle-school science teacher. Which job do you think is harder?
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                        <div class="bg-[var(--bg-main)] p-6 border border-[var(--border-color)] rounded shadow-sm">
+                            <p class="text-red-500 font-bold uppercase text-[10px] tracking-widest mb-3 font-head">Saving Earth:</p>
+                            <p class="text-base md:text-lg font-medium text-gray-200">"You <span class="text-red-500 font-bold">must</span> solve impossible math problems to stop extinction."</p>
+                        </div>
+                        <div class="bg-[var(--bg-main)] p-6 border border-[var(--border-color)] rounded shadow-sm">
+                            <p class="text-[var(--accent)] font-bold uppercase text-[10px] tracking-widest mb-3 font-head">Teaching Kids:</p>
+                            <p class="text-base md:text-lg font-medium text-gray-200">"You <span class="text-[var(--accent)] font-bold">have to</span> make teenagers pay attention for 50 minutes."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 23: The Great Debate -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Debate</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-10 text-center text-[var(--text-main)]">Science vs Ethics</h1>
+                
+                <div class="space-panel p-8 md:p-12 max-w-4xl mx-auto w-full text-center">
+                    <p class="text-xl md:text-2xl font-bold leading-relaxed mb-10 text-white">
+                        "If saving the world required you to do something terrible or unethical to another species (like the Astrophage), would you do it?"
+                    </p>
+                    <button class="space-btn px-8 py-4 text-base md:text-lg" onclick="triggerPraise('GREAT ARGUMENT!', '🗣️')">Debate with Teacher</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 24: Homework Directive -->
+        <section class="slide">
+            <div class="page-content">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] text-center font-head">Post-Class Assignment</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-8 text-center text-[var(--text-main)]">Message to Earth</h1>
+                
+                <div class="space-panel p-8 md:p-10 max-w-3xl mx-auto w-full relative border-2 border-[var(--accent)]">
+                    <div class="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-[var(--accent)] text-[#020617] font-black uppercase tracking-widest px-4 md:px-6 py-1 md:py-2 text-xs md:text-sm font-head shadow-lg">HOMEWORK</div>
+                    <h3 class="text-xl md:text-2xl font-black mb-6 uppercase border-b border-[var(--border-color)] pb-4 tracking-widest font-head text-white">Instructions:</h3>
+                    <p class="text-base md:text-lg leading-relaxed font-bold mb-6 text-gray-300">
+                        "Write a short message (100 words) to send back to Earth. Tell them what you discovered."
+                    </p>
+                    <ul class="list-disc pl-6 md:pl-8 text-sm md:text-base font-medium space-y-4 mb-4 text-gray-400">
+                        <li>Use <strong class="text-[var(--accent)]">Have to</strong> to explain a technical problem on the ship.</li>
+                        <li>Use <strong class="text-red-500">Must</strong> to tell Earth what they need to do to survive.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 25: Conclusion -->
+        <section class="slide">
+            <div class="page-content items-center text-center">
+                <h2 class="font-bold tracking-widest mb-2 uppercase text-xs text-[var(--accent)] font-head">Session Complete</h2>
+                <h1 class="text-4xl md:text-6xl font-head uppercase mb-10 text-[var(--text-main)] drop-shadow-md">Mission Over</h1>
+                
+                <div class="space-panel p-8 text-center flex flex-col justify-center border border-[var(--border-color)] max-w-2xl mx-auto w-full mb-10 bg-black/40">
+                    <p class="mb-6 text-sm md:text-base font-bold text-gray-400 uppercase tracking-widest font-head">Rate this mission's intensity:</p>
+                    <div class="flex justify-center gap-3 md:gap-6 mb-6">
+                        <button onclick="rate(1)" class="planet-rating text-4xl md:text-5xl grayscale opacity-30 hover:scale-110 transition-transform filter drop-shadow-md">🪐</button>
+                        <button onclick="rate(2)" class="planet-rating text-4xl md:text-5xl grayscale opacity-30 hover:scale-110 transition-transform filter drop-shadow-md">🪐</button>
+                        <button onclick="rate(3)" class="planet-rating text-4xl md:text-5xl grayscale opacity-30 hover:scale-110 transition-transform filter drop-shadow-md">🪐</button>
+                        <button onclick="rate(4)" class="planet-rating text-4xl md:text-5xl grayscale opacity-30 hover:scale-110 transition-transform filter drop-shadow-md">🪐</button>
+                        <button onclick="rate(5)" class="planet-rating text-4xl md:text-5xl grayscale opacity-30 hover:scale-110 transition-transform filter drop-shadow-md">🪐</button>
+                    </div>
+                    <div id="rat-hub" class="hidden p-2 bg-black rounded font-bold text-[10px] md:text-xs text-center uppercase tracking-widest text-gray-400 w-max mx-auto font-head border border-[var(--border-color)]">> RATED <span id="star-c" class="text-[var(--accent)] mx-2 font-black text-lg"></span> PLANETS.</div>
+                </div>
+
+                <button onclick="window.location.reload();" class="space-btn px-10 py-4 text-base md:text-lg">
+                    Return to Sleep
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="h-16 md:h-20 bg-[var(--panel-bg)] border-t border-[var(--border-color)] z-40 flex items-center justify-between px-4 md:px-8 shrink-0 backdrop-blur-md transition-colors duration-500">
+        <div class="hidden md:flex flex-1 items-center gap-2">
+            <span class="font-black text-xl tracking-widest uppercase text-[var(--accent)] font-head">WOLFLIX</span>
+            <span class="text-xs uppercase tracking-widest border-l border-[var(--border-color)] pl-2 opacity-70 font-bold text-[var(--text-main)]">Masterclass</span>
+        </div>
+
+        <div class="flex items-center justify-center flex-1 gap-4 md:gap-6">
+            <button onclick="prevSlide()" class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border border-[var(--border-color)] rounded hover:bg-[var(--accent)] hover:text-[#020617] transition-colors text-[var(--text-main)] shadow-sm font-bold text-xl" title="Previous Phase">
+                &lt;
+            </button>
+            <div class="w-32 md:w-40 bg-black/40 h-2 rounded-full overflow-hidden border border-[var(--border-color)] shadow-inner">
+                <div id="lcd-prog" class="h-full bg-[var(--accent)] w-0 transition-all duration-300"></div>
+            </div>
+            <button onclick="nextSlide()" class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border border-[var(--border-color)] rounded hover:bg-[var(--accent)] hover:text-[#020617] transition-colors text-[var(--text-main)] shadow-sm font-bold text-xl" title="Next Phase">
+                &gt;
+            </button>
+        </div>
+
+        <div class="flex-1 text-right font-bold tracking-widest uppercase text-xs md:text-sm font-head text-[var(--text-muted)]">
+            Page <span id="page-num" class="text-[var(--text-main)] ml-1 font-black">01</span> <span class="opacity-50 text-[10px] font-base">/ 25</span>
+        </div>
+    </footer>
+
+    <!-- SLIDE-OUT NOTEPAD -->
+    <aside id="notepad-panel" class="fixed top-0 right-0 w-full max-w-md h-full bg-[var(--bg-main)] border-l border-[var(--border-color)] z-[70] translate-x-full flex flex-col shadow-[-10px_0_30px_rgba(0,0,0,0.8)] transition-transform duration-300 text-[var(--text-main)]">
+        <div class="p-6 border-b border-[var(--border-color)] bg-[var(--panel-bg)] flex justify-between items-center shadow-sm">
+            <h2 class="font-black uppercase tracking-widest text-lg flex items-center gap-2 font-head text-[var(--accent)]">
+                📓 Ship Logs
+            </h2>
+            <button onclick="closeNotepad()" class="text-gray-400 hover:text-white font-black text-2xl px-2 transition-colors">✕</button>
+        </div>
+        <textarea class="flex-1 w-full bg-transparent p-8 font-base font-medium text-lg leading-relaxed outline-none resize-none placeholder:text-[var(--text-muted)]" placeholder="Type your mission notes here..."></textarea>
+    </aside>
+
+    <script>
+        // GLOBAL VARIABLES
+        var currentSlide = 0;
+        var totalSlides = 25;
+        var isAwake = false;
+
+        // PAGINATION & UI
+        function updateUI() {
+            var slides = document.querySelectorAll('.slide');
+            var pageNum = document.getElementById('page-num');
+            var prog = document.getElementById('lcd-prog');
+            var mainArea = document.getElementById('main-area');
+
+            if(pageNum) pageNum.innerText = (currentSlide + 1).toString().padStart(2, '0');
+            if(prog && totalSlides > 1) prog.style.width = ((currentSlide / (totalSlides - 1)) * 100) + '%';
+
+            for(var i = 0; i < slides.length; i++) {
+                if(i === currentSlide) {
+                    slides[i].classList.add('active');
+                } else {
+                    slides[i].classList.remove('active');
+                }
+            }
+
+            // Pause iframes
+            var iframes = document.querySelectorAll('iframe');
+            for(var j = 0; j < iframes.length; j++) {
+                var src = iframes[j].src;
+                iframes[j].src = src; 
+            }
+
+            if(mainArea) mainArea.scrollTop = 0;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateUI();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateUI();
+            }
+        }
+
+        // KEYBOARD NAVIGATION
+        document.addEventListener('keydown', function(e) {
+            if(e.key === 'ArrowRight') nextSlide();
+            if(e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // MODALS & BUTTONS
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(function(err){});
+            } else {
+                document.exitFullscreen().catch(function(err){});
+            }
+        }
+
+        function toggleNotepad() {
+            var panel = document.getElementById('notepad-panel');
+            var overlay = document.getElementById('overlay-dark');
+            if(panel) panel.classList.toggle('translate-x-full');
+            if(overlay) overlay.classList.toggle('hidden');
+        }
+
+        function closeNotepad() {
+            var panel = document.getElementById('notepad-panel');
+            var overlay = document.getElementById('overlay-dark');
+            if(panel) panel.classList.add('translate-x-full');
+            if(overlay) overlay.classList.add('hidden');
+        }
+
+        function showDef(word, def, prompt) {
+            var elWord = document.getElementById('dict-word');
+            var elDef = document.getElementById('dict-def');
+            var elPrompt = document.getElementById('dict-prompt');
+            var modal = document.getElementById('dict-modal');
+            
+            if(elWord) elWord.innerText = word;
+            if(elDef) elDef.innerText = def;
+            if(elPrompt) elPrompt.innerText = prompt;
+            if(modal) modal.style.display = 'flex';
+        }
+
+        function closeDict() {
+            var modal = document.getElementById('dict-modal');
+            if(modal) modal.style.display = 'none';
+        }
+
+        function triggerPraise(text, icon) {
+            var popup = document.getElementById('praise-popup');
+            var textEl = document.getElementById('praise-text');
+            if(textEl) textEl.innerHTML = text + " <span class='ml-2'>" + icon + "</span>";
+            if(popup) {
+                popup.classList.add('show');
+                setTimeout(function() {
+                    popup.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        // WOW MECHANIC
+        function triggerWakeUpProtocol() {
+            if(isAwake) {
+                nextSlide();
+                return;
+            }
+            var btn = document.getElementById('wakeup-btn');
+            if(btn) btn.disabled = true;
+
+            var overlay = document.getElementById('reboot-overlay');
+            if(overlay) overlay.classList.add('reboot-active');
+
+            setTimeout(function() {
+                document.body.classList.add('theme-awake');
+                var title = document.getElementById('header-title');
+                var icon = document.getElementById('header-icon');
+                if(title) title.innerText = "LAB STATUS: ACTIVE";
+                if(icon) {
+                    icon.classList.remove('grayscale', 'opacity-50');
+                    icon.classList.add('drop-shadow-md');
+                }
+                isAwake = true;
+            }, 1000);
+
+            setTimeout(function() {
+                if(overlay) overlay.classList.remove('reboot-active');
+                nextSlide();
+            }, 2500);
+        }
+
+        // RATING SYSTEM
+        function rate(n) {
+            var drops = document.querySelectorAll('.planet-rating');
+            for(var i=0; i<drops.length; i++) {
+                if(i < n) {
+                    drops[i].classList.remove('grayscale', 'opacity-30');
+                    drops[i].style.filter = "drop-shadow(0 0 10px rgba(34, 211, 238, 0.8))";
+                } else {
+                    drops[i].classList.add('grayscale', 'opacity-30');
+                    drops[i].style.filter = "none";
+                }
+            }
+            var hub = document.getElementById('rat-hub');
+            var star = document.getElementById('star-c');
+            if(hub) hub.classList.remove('hidden');
+            if(star) star.innerText = n;
+        }
+
+        // MATCHING GAME LOGIC
+        var matchState = {
+            1: { selectedWord: null, matchedCount: 0 },
+            2: { selectedWord: null, matchedCount: 0 }
+        };
+
+        function handleMatch(btn, type, gameId) {
+            if(btn.classList.contains('matched')) return;
+
+            var state = matchState[gameId];
+
+            if(type === 'word') {
+                var words = document.querySelectorAll('.word-btn-' + gameId);
+                for(var i=0; i<words.length; i++) {
+                    if(!words[i].classList.contains('matched')) words[i].classList.remove('selected');
+                }
+                btn.classList.add('selected');
+                state.selectedWord = btn;
+            } 
+            else if(type === 'def' && state.selectedWord) {
+                if(btn.getAttribute('data-match') === state.selectedWord.getAttribute('data-match')) {
+                    btn.classList.add('matched');
+                    state.selectedWord.classList.add('matched');
+                    state.selectedWord.classList.remove('selected');
+                    state.selectedWord = null;
+                    state.matchedCount++;
+                    
+                    if(state.matchedCount === 3) {
+                        var suc = document.getElementById('lex-success-' + gameId);
+                        if(suc) suc.classList.remove('hidden');
+                        triggerPraise('SYSTEM DECRYPTED!', '🔓');
+                    }
+                } else {
+                    btn.classList.add('error-shake', 'border-red-500', 'text-red-500');
+                    setTimeout(function() {
+                        btn.classList.remove('error-shake', 'border-red-500', 'text-red-500');
+                    }, 400);
+                }
+            }
+        }
+
+        // INITIALIZE
+        updateUI();
+
+    </script>
+</body>
+</html>
